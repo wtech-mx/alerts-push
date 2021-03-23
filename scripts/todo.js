@@ -26,9 +26,16 @@ const title = document.getElementById('title');
 
 const hours = document.getElementById('deadline-hours');
 const minutes = document.getElementById('deadline-minutes');
+
+const datecm = document.getElementById('datecm');
+
 const day = document.getElementById('deadline-day');
+
 const month = document.getElementById('deadline-month');
+
+
 const year = document.getElementById('deadline-year');
+
 
 const submit = document.getElementById('submit');
 
@@ -92,6 +99,7 @@ window.onload = function() {
 
     objectStore.createIndex("hours", "hours", { unique: false });
     objectStore.createIndex("minutes", "minutes", { unique: false });
+    objectStore.createIndex("datecm", "datecm", { unique: false });
     objectStore.createIndex("day", "day", { unique: false });
     objectStore.createIndex("month", "month", { unique: false });
     objectStore.createIndex("year", "year", { unique: false });
@@ -110,12 +118,12 @@ window.onload = function() {
     let objectStore = db.transaction('toDoList').objectStore('toDoList');
     objectStore.openCursor().onsuccess = function(event) {
       let cursor = event.target.result;
-        // if there is still another cursor to go, keep runing this code
+        // si aún queda otro cursor, siga ejecutando este código
         if(cursor) {
-          // create a list item to put each data item inside when displaying it
+          // crear un elemento de lista para poner cada elemento de datos dentro al mostrarlo
           const listItem = document.createElement('li');
 
-          // check which suffix the deadline day of the month needs
+          // comprobar qué sufijo necesita el día límite del mes
           if(cursor.value.day == 1 || cursor.value.day == 21 || cursor.value.day == 31) {
             daySuffix = "st";
           } else if(cursor.value.day == 2 || cursor.value.day == 22) {
@@ -126,7 +134,7 @@ window.onload = function() {
             daySuffix = "th";
           }
 
-          // build the to-do list entry and put it into the list item via innerHTML.
+          //cree la entrada de la lista de tareas pendientes y colóquela en el elemento de la lista a través de innerHTML.
           listItem.innerHTML = cursor.value.taskTitle + ' — ' + cursor.value.hours + ':' + cursor.value.minutes + ', ' + cursor.value.month + ' ' + cursor.value.day + daySuffix + ' ' + cursor.value.year + '.';
 
           if(cursor.value.notified == "yes") {
@@ -134,57 +142,57 @@ window.onload = function() {
             listItem.style.color = "rgba(255,0,0,0.5)";
           }
 
-          // put the item item inside the task list
+          // poner el elemento dentro de la lista de tareas
           taskList.appendChild(listItem);
 
-          // create a delete button inside each list item, giving it an event handler so that it runs the deleteButton()
-          // function when clicked
+          // cree un botón de eliminación dentro de cada elemento de la lista, dándole un controlador de eventos para que ejecute el botón de eliminación ()
+          // función cuando se hace clic
           const deleteButton = document.createElement('button');
           listItem.appendChild(deleteButton);
           deleteButton.innerHTML = 'X';
-          // here we are setting a data attribute on our delete button to say what task we want deleted if it is clicked!
+          // aquí estamos configurando un atributo de datos en nuestro botón de eliminar para decir qué tarea queremos eliminar si se hace clic en ella.
           deleteButton.setAttribute('data-task', cursor.value.taskTitle);
           deleteButton.onclick = function(event) {
             deleteItem(event);
           }
 
-          // continue on to the next item in the cursor
+          // aquí estamos configurando un atributo de datos en nuestro botón de eliminar para decir qué tarea queremos eliminar si se hace clic en ella.
           cursor.continue();
 
-        // if there are no more cursor items to iterate through, say so, and exit the function
+        // si no hay más elementos de cursor para iterar, dígalo y salga de la función
         } else {
           note.innerHTML += '<li>Todas las entradas mostradas.</li>';
         }
       }
     }
 
-  // give the form submit button an event listener so that when the form is submitted the addData() function is run
+  // dar al botón de envío del formulario un detector de eventos para que cuando se envíe el formulario se ejecute la función addData ()
   taskForm.addEventListener('submit',addData,false);
 
   function addData(e) {
-    // prevent default - we don't want the form to submit in the conventional way
+    //evitar el incumplimiento: no queremos que el formulario se envíe de la forma convencional
     e.preventDefault();
 
-    // Stop the form submitting if any values are left empty. This is just for browsers that don't support the HTML5 form
-    // required attributes
+    // Detenga el envío del formulario si algún valor se deja vacío. Esto es solo para navegadores que no admiten el formulario HTML5.
+    // atributos requeridos
     if(title.value == '' || hours.value == null || minutes.value == null || day.value == '' || month.value == '' || year.value == null) {
       note.innerHTML += '<li>Datos no enviados - formulario incompleto.</li>';
       return;
     } else {
 
-      // grab the values entered into the form fields and store them in an object ready for being inserted into the IDB
+      // tomar los valores ingresados en los campos del formulario y almacenarlos en un objeto listo para ser insertado en el BID
       let newItem = [
         { taskTitle: title.value, hours: hours.value, minutes: minutes.value, day: day.value, month: month.value, year: year.value, notified: "no" }
       ];
 
-      // open a read/write db transaction, ready for adding the data
+      // abra una transacción de lectura / escritura de base de datos, lista para agregar los datos
       let transaction = db.transaction(["toDoList"], "readwrite");
 
-      // report on the success of the transaction completing, when everything is done
+      // informe sobre el éxito de la transacción completada, cuando todo esté hecho
       transaction.oncomplete = function() {
         note.innerHTML += '<li>Transacción completada: modificación de la base de datos finalizada.</li>';
 
-        // update the display of data to show the newly added item, by running displayData() again.
+        // actualice la visualización de datos para mostrar el elemento recién agregado, ejecutando displayData () nuevamente.
         displayData();
       };
 
@@ -192,7 +200,7 @@ window.onload = function() {
         note.innerHTML += '<li>Transacción no abierta debido a error: ' + transaction.error + '</li>';
       };
 
-      // call an object store that's already been added to the database
+      // llamar a un almacén de objetos que ya se ha agregado a la base de datos
       let objectStore = transaction.objectStore("toDoList");
       console.log(objectStore.indexNames);
       console.log(objectStore.keyPath);
@@ -200,16 +208,16 @@ window.onload = function() {
       console.log(objectStore.transaction);
       console.log(objectStore.autoIncrement);
 
-      // Make a request to add our newItem object to the object store
+      // Haga una solicitud para agregar nuestro objeto newItem al almacén de objetos
       let objectStoreRequest = objectStore.add(newItem[0]);
         objectStoreRequest.onsuccess = function(event) {
 
-          // report the success of our request
-          // (to detect whether it has been succesfully
-          // added to the database, you'd look at transaction.oncomplete)
+      // reportar el éxito de nuestra solicitud
+      // (para detectar si se ha agregado exitosamente
+      // a la base de datos, debe mirar a transaction.oncomplete)
           note.innerHTML += '<li>Solicitud exitosa.</li>';
 
-          // clear the form, ready for adding the next entry
+          // limpia el formulario, listo para agregar la siguiente entrada
           title.value = '';
           hours.value = null;
           minutes.value = null;
@@ -224,50 +232,50 @@ window.onload = function() {
     };
 
   function deleteItem(event) {
-    // retrieve the name of the task we want to delete
+    // recuperar el nombre de la tarea que queremos eliminar
     let dataTask = event.target.getAttribute('data-task');
 
-    // open a database transaction and delete the task, finding it by the name we retrieved above
+    // abrir una transacción de base de datos y eliminar la tarea, encontrándola por el nombre que recuperamos arriba
     let transaction = db.transaction(["toDoList"], "readwrite");
     let request = transaction.objectStore("toDoList").delete(dataTask);
 
-    // report that the data item has been deleted
+    // informar que el elemento de datos ha sido eliminado
     transaction.oncomplete = function() {
-      // delete the parent of the button, which is the list item, so it no longer is displayed
+      // eliminar el padre del botón, que es el elemento de la lista, por lo que ya no se muestra
       event.target.parentNode.parentNode.removeChild(event.target.parentNode);
       note.innerHTML += '<li>Task \"' + dataTask + '\" deleted.</li>';
     };
   };
 
-  // this function checks whether the deadline for each task is up or not, and responds appropriately
+  // esta función comprueba si la fecha límite para cada tarea ha finalizado o no, y responde adecuadamente
   function checkDeadlines() {
-    // First of all check whether notifications are enabled or denied
+    // En primer lugar, compruebe si las notificaciones están habilitadas o denegadas.
     if(Notification.permission === 'denied' || Notification.permission === 'default') {
       notificationBtn.style.display = 'block';
     } else {
       notificationBtn.style.display = 'none';
     }
 
-    // grab the time and date right now
+    // toma la hora y la fecha ahora mismo
     const now = new Date();
 
-    // from the now variable, store the current minutes, hours, day of the month (getDate is needed for this, as getDay
-    // returns the day of the week, 1-7), month, year (getFullYear needed; getYear is deprecated, and returns a weird value
-    // that is not much use to anyone!) and seconds
+    // desde la variable ahora, almacena los minutos, horas, día del mes actuales (para esto se necesita getDate, como getDay
+     // devuelve el día de la semana, 1-7), mes, año (se necesita getFullYear; getYear está en desuso y devuelve un valor extraño
+     // ¡Eso no es de mucha utilidad para nadie!) y segundos
     const minuteCheck = now.getMinutes();
     const hourCheck = now.getHours();
     const dayCheck = now.getDate();
     const monthCheck = now.getMonth();
     const yearCheck = now.getFullYear();
 
-    // again, open a transaction then a cursor to iterate through all the data items in the IDB
+    //nuevamente, abra una transacción y luego un cursor para recorrer todos los elementos de datos en el BID
     let objectStore = db.transaction(['toDoList'], "readwrite").objectStore('toDoList');
     objectStore.openCursor().onsuccess = function(event) {
       let cursor = event.target.result;
         if(cursor) {
 
-        // convert the month names we have installed in the IDB into a month number that JavaScript will understand.
-        // The JavaScript date object creates month values as a number between 0 and 11.
+          // convertir los nombres de los meses que hemos instalado en el BID en un número de mes que JavaScript entenderá.
+         // El objeto de fecha de JavaScript crea valores de mes como un número entre 0 y 11.
         switch(cursor.value.month) {
           case "January":
             var monthNumber = 0;
@@ -308,22 +316,22 @@ window.onload = function() {
           default:
           alert('Incorrect month entered in database.');
         }
-          // check if the current hours, minutes, day, month and year values match the stored values for each task in the IDB.
-          // The + operator in this case converts numbers with leading zeros into their non leading zero equivalents, so e.g.
-          // 09 -> 9. This is needed because JS date number values never have leading zeros, but our data might.
-          // The secondsCheck = 0 check is so that you don't get duplicate notifications for the same task. The notification
-          // will only appear when the seconds is 0, meaning that you won't get more than one notification for each task
+            // verifica si los valores actuales de horas, minutos, día, mes y año coinciden con los valores almacenados para cada tarea en el BID.
+           // El operador + en este caso convierte los números con ceros iniciales en sus equivalentes de cero no iniciales, por ejemplo,
+           // 09 -> 9. Esto es necesario porque los valores de los números de fecha JS nunca tienen ceros a la izquierda, pero nuestros datos sí.
+           // La verificación secondsCheck = 0 es para que no reciba notificaciones duplicadas para la misma tarea. La notificación
+           // solo aparecerá cuando los segundos sean 0, lo que significa que no recibirás más de una notificación para cada tarea
           if(+(cursor.value.hours) == hourCheck && +(cursor.value.minutes) == minuteCheck && +(cursor.value.day) == dayCheck && monthNumber == monthCheck && cursor.value.year == yearCheck && cursor.value.notified == "no") {
 
-            // If the numbers all do match, run the createNotification() function to create a system notification
-            // but only if the permission is set
+              // Si todos los números coinciden, ejecute la función createNotification () para crear una notificación del sistema
+             // pero solo si el permiso está establecido
 
             if(Notification.permission === 'granted') {
               createNotification(cursor.value.taskTitle);
             }
           }
 
-          // move on and perform the same deadline check on the next cursor item
+          // seguir adelante y realizar la misma verificación de fecha límite en el siguiente elemento del cursor
           cursor.continue();
         }
 
@@ -332,17 +340,17 @@ window.onload = function() {
   }
 
 
-  // askNotificationPermission function to ask for permission when the "Enable notifications" button is clicked
+  //función askNotificationPermission para solicitar permiso cuando se hace clic en el botón "Habilitar notificaciones"
 
   function askNotificationPermission() {
-    // function to actually ask the permissions
+    // función para pedir realmente los permisos
     function handlePermission(permission) {
-      // Whatever the user answers, we make sure Chrome stores the information
+      // Independientemente de lo que responda el usuario, nos aseguramos de que Chrome almacene la información
       if(!('permission' in Notification)) {
         Notification.permission = permission;
       }
 
-      // set the button to shown or hidden, depending on what the user answers
+      // establecer el botón en mostrado u oculto, dependiendo de lo que responda el usuario
       if(Notification.permission === 'denied' || Notification.permission === 'default') {
         notificationBtn.style.display = 'block';
       } else {
@@ -350,7 +358,7 @@ window.onload = function() {
       }
     }
 
-    // Let's check if the browser supports notifications
+    // Comprobemos si el navegador admite notificaciones.
     if (!"Notification" in window) {
       console.log("Este navegador no admite notificaciones.");
     } else {
@@ -367,8 +375,8 @@ window.onload = function() {
     }
   }
 
-  // Function to check whether browser supports the promise version of requestPermission()
-  // Safari only supports the old callback-based version
+    // Función para verificar si el navegador es compatible con la versión de promesa de requestPermission ()
+   // Safari solo admite la versión anterior basada en devolución de llamada
   function checkNotificationPromise() {
     try {
       Notification.requestPermission().then();
@@ -379,46 +387,46 @@ window.onload = function() {
     return true;
   }
 
-  // wire up notification permission functionality to "Enable notifications" button
+  //conecte la funcionalidad de permiso de notificación al botón "Habilitar notificaciones"
 
   notificationBtn.addEventListener('click', askNotificationPermission);
 
 
 
-  // function for creating the notification
+  // función para crear la notificación
   function createNotification(title) {
 
-    // Create and show the notification
+    // Crea y muestra la notificación
     let img = '/to-do-notifications/img/icon-128.png';
     let text = 'HEY! Your task "' + title + '" is now overdue.';
     let notification = new Notification('Alerta', { body: text, icon: img });
 
-    // we need to update the value of notified to "yes" in this particular data object, so the
-    // notification won't be set off on it again
+      // necesitamos actualizar el valor de notificado a "sí" en este objeto de datos en particular, por lo que
+     // la notificación no se activará de nuevo
 
-    // first open up a transaction as usual
+    // primero abre una transacción como de costumbre
     let objectStore = db.transaction(['toDoList'], "readwrite").objectStore('toDoList');
 
-    // get the to-do list object that has this title as it's title
+    // obtener el objeto de la lista de tareas pendientes que tiene este título como título
     let objectStoreTitleRequest = objectStore.get(title);
 
     objectStoreTitleRequest.onsuccess = function() {
-      // grab the data object returned as the result
+      //tomar el objeto de datos devuelto como resultado
       let data = objectStoreTitleRequest.result;
 
-      // update the notified value in the object to "yes"
+      // actualizar el valor notificado en el objeto a "sí"
       data.notified = "yes";
 
-      // create another request that inserts the item back into the database
+      // crear otra solicitud que inserte el elemento de nuevo en la base de datos
       let updateTitleRequest = objectStore.put(data);
 
-      // when this new request succeeds, run the displayData() function again to update the display
+      //cuando esta nueva solicitud tenga éxito, ejecute la función displayData () nuevamente para actualizar la pantalla
       updateTitleRequest.onsuccess = function() {
         displayData();
       }
     }
   }
 
-  // using a setInterval to run the checkDeadlines() function every second
+  // usando un setInterval para ejecutar la función checkDeadlines () cada segundo
   setInterval(checkDeadlines, 1000);
 }
