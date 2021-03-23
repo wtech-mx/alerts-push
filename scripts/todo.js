@@ -1,16 +1,24 @@
-// create a reference to the notifications list in the bottom of the app; we will write database messages into this list by
-//appending list items on to the inner HTML of this variable - this is all the lines that say note.innerHTML += '<li>foo</li>';
+// crear una referencia a la lista de notificaciones en la parte inferior de la aplicación;
+
+// escribiremos los mensajes de la base de datos en esta lista por
+
+//agregar elementos de la lista al HTML interno de esta variable- estas son todas las líneas que dicen nota.innerHTML += '<li>foo</li>';
+
 const note = document.getElementById('notifications');
 
-// create an instance of a db object for us to store the IDB data in
+// crear una instancia de un objeto db para que almacenemos los datos del IDB en
+
 let db;
 
-// create a blank instance of the object that is used to transfer data into the IDB. This is mainly for reference
+// Cree una instancia en blanco del objeto que se utiliza para transferir datos al BID.
+// Esto es principalmente para referencia.
+
 let newItem = [
       { taskTitle: "", hours: 0, minutes: 0, day: 0, month: "", year: 0, notified: "no" }
     ];
 
-// all the variables we need for the app
+// todas las variables que necesitamos para la aplicación
+
 const taskList = document.getElementById('task-list');
 
 const taskForm = document.getElementById('task-form');
@@ -26,7 +34,7 @@ const submit = document.getElementById('submit');
 
 const notificationBtn = document.getElementById('enable');
 
-// Do an initial check to see what the notification permission state is
+// Haga una verificación inicial para ver cuál es el estado del permiso de notificación
 
 if(Notification.permission === 'denied' || Notification.permission === 'default') {
   notificationBtn.style.display = 'block';
@@ -36,21 +44,21 @@ if(Notification.permission === 'denied' || Notification.permission === 'default'
 
 window.onload = function() {
   note.innerHTML += '<li>Aplicación inicializada.</li>';
-  // In the following line, you should include the prefixes of implementations you want to test.
+  // En la siguiente línea, debe incluir los prefijos de las implementaciones que desea probar.
   window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-  // DON'T use "var indexedDB = ..." if you're not in a function.
-  // Moreover, you may need references to some window.IDB* objects:
+  // NO use "var indexedDB = ..." si no está en una función.
+  // Además, es posible que necesite referencias a algunos objetos window.IDB:
   window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
   window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange;
   // (Mozilla has never prefixed these objects, so we don't need window.mozIDB*)
 
-  // Let us open our database
+  // Abramos nuestra base de datos
   const DBOpenRequest = window.indexedDB.open("toDoList", 4);
 
-  // Gecko-only IndexedDB temp storage option:
+  // Opción de almacenamiento temporal IndexedDB solo de Gecko:
   // var request = window.indexedDB.open("toDoList", {version: 4, storage: "temporary"});
 
-  // these two event handlers act on the database being opened successfully, or not
+  // estos dos controladores de eventos actúan sobre la base de datos que se abre con éxito, o no
   DBOpenRequest.onerror = function(event) {
     note.innerHTML += '<li>Error al cargar la base de datos.</li>';
   };
@@ -58,17 +66,17 @@ window.onload = function() {
   DBOpenRequest.onsuccess = function(event) {
     note.innerHTML += '<li>Base de datos inicializada.</li>';
 
-    // store the result of opening the database in the db variable. This is used a lot below
+    // almacenar el resultado de abrir la base de datos en la variable db. Esto se usa mucho a continuación
     db = DBOpenRequest.result;
 
-    // Run the displayData() function to populate the task list with all the to-do list data already in the IDB
+    // Run the displayData() function to completar la lista de tareas con todos los datos de la lista de tareas pendientes que ya se encuentran en el idb
     displayData();
   };
 
-  // This event handles the event whereby a new version of the database needs to be created
-  // Either one has not been created before, or a new version number has been submitted via the
+  // Este evento maneja el evento por el cual se necesita crear una nueva versión de la base de datos.
+  // O no se ha creado antes o se ha enviado un nuevo número de versión a través del
   // window.indexedDB.open line above
-  //it is only implemented in recent browsers
+  //solo se implementa en navegadores recientes
   DBOpenRequest.onupgradeneeded = function(event) {
     let db = event.target.result;
 
@@ -76,11 +84,11 @@ window.onload = function() {
       note.innerHTML += '<li>Error al cargar la base de datos.</li>';
     };
 
-    // Create an objectStore for this database
+    // Cree un objectStore para esta base de datos
 
     let objectStore = db.createObjectStore("toDoList", { keyPath: "taskTitle" });
 
-    // define what data items the objectStore will contain
+    // definir qué elementos de datos contendrá el objectStore
 
     objectStore.createIndex("hours", "hours", { unique: false });
     objectStore.createIndex("minutes", "minutes", { unique: false });
@@ -94,11 +102,11 @@ window.onload = function() {
   };
 
   function displayData() {
-    // first clear the content of the task list so that you don't get a huge long list of duplicate stuff each time
-    //the display is updated.
+    // Primero borre el contenido de la lista de tareas para que no obtenga una lista enorme y larga de cosas duplicadas cada vez.
+    // la pantalla se actualiza.
     taskList.innerHTML = "";
 
-    // Open our object store and then get a cursor list of all the different data items in the IDB to iterate through
+    // Abra nuestro almacén de objetos y luego obtenga una lista de cursores de todos los diferentes elementos de datos en el BID para iterar
     let objectStore = db.transaction('toDoList').objectStore('toDoList');
     objectStore.openCursor().onsuccess = function(event) {
       let cursor = event.target.result;
